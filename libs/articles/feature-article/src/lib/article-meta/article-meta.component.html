@@ -1,10 +1,10 @@
 <div class="article-meta">
-  <a [routerLink]="['/profile', article.author.username]">
-    <img [src]="article.author.image" />
+  <a [routerLink]="['/profile', article.authors[0].username]">
+    <img [src]="article.authors[0].image" />
   </a>
   <div class="info">
-    <a class="author" [routerLink]="['/profile', article.author.username]">
-      {{ article.author.username }}
+    <a class="author" [routerLink]="['/profile', article.authors[0].username]">
+      {{ article.authors[0].username }}
     </a>
     <span class="date">{{ article.createdAt | date : 'longDate' }}</span>
   </div>
@@ -23,14 +23,14 @@
     <button
       class="btn btn-sm action-btn"
       [ngClass]="{
-        'btn-outline-secondary': !article.author.following,
-        'btn-secondary': article.author.following
+        'btn-outline-secondary': !article.authors[0].following,
+        'btn-secondary': article.authors[0].following
       }"
-      (click)="toggleFollow()"
+      (click)="toggleFollow(article.authors[0])"
     >
       <i class="ion-plus-round"></i>
-      &nbsp; {{ article.author.following ? 'Unfollow' : 'Follow' }}
-      {{ article.author.username }}
+      &nbsp; {{ article.authors[0].following ? 'Unfollow' : 'Follow' }}
+      {{ article.authors[0].username }}
     </button>
     &nbsp;&nbsp;
     <button

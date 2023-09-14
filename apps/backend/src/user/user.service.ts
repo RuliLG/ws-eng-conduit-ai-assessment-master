@@ -145,11 +145,11 @@ export class UserService {
   }
 
   private async countByUser(user: User): Promise<number> {
-    return this.articleRepository.count({ author: user });
+    return this.articleRepository.count({ authors: user });
   }
 
   private async countLikesByUser(user: User): Promise<number> {
-    const articles = await this.articleRepository.find({ author: user }, {
+    const articles = await this.articleRepository.find({ authors: user }, {
       populate: ['favoritesCount']
     });
     return articles.reduce((sum, article) => sum + article.favoritesCount, 0);
@@ -157,7 +157,7 @@ export class UserService {
 
   private async findFirstArticleDateByUser(user: User): Promise<Date | null> {
     const firstArticle = await this.articleRepository.findOne(
-      { author: user },
+      { authors: user },
       { orderBy: { createdAt: QueryOrder.ASC } }
     );
     return firstArticle ? firstArticle.createdAt : null;

@@ -54,7 +54,7 @@ export class User {
   @ManyToMany(() => User, (u) => u.followers, { hidden: true })
   followed = new Collection<User>(this);
 
-  @OneToMany(() => Article, (article) => article.author, { hidden: true })
+  @ManyToMany(() => Article, (article) => article.authors, { hidden: true, joinColumn: 'author_id' })
   articles = new Collection<Article>(this);
 
   constructor(username: string, email: string, password: string) {

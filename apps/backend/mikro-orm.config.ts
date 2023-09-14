@@ -11,6 +11,8 @@ import { Tag } from './src/tag/tag.entity';
 import { Article } from './src/article/article.entity';
 import { Comment } from './src/article/comment.entity';
 import { InitialMigration } from './src/migrations/InitialMigration';
+import { Migration20230914000000 } from './src/migrations/Migration20230914000000';
+import { Migration20230914000001 } from './src/migrations/Migration20230914000001';
 
 export default defineConfig({
   host: 'localhost',
@@ -24,6 +26,14 @@ export default defineConfig({
         name: 'InitialMigration',
         class: InitialMigration,
       },
+      {
+        name: 'Migration20230914000000',
+        class: Migration20230914000000,
+      },
+      {
+        name: 'Migration20230914000001',
+        class: Migration20230914000001,
+      }
     ],
   },
   entities: [User, Tag, Article, Comment],
