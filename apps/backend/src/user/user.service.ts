@@ -2,16 +2,24 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { validate } from 'class-validator';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-import { EntityManager, wrap } from '@mikro-orm/core';
+import { EntityManager, EntityRepository, QueryOrder, wrap } from '@mikro-orm/core';
 import { SECRET } from '../config';
 import { CreateUserDto, LoginUserDto, UpdateUserDto } from './dto';
 import { User } from './user.entity';
 import { IUserRO } from './user.interface';
 import { UserRepository } from './user.repository';
+import { InjectRepository } from '@mikro-orm/nestjs';
+import { Article } from '../article/article.entity';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly userRepository: UserRepository, private readonly em: EntityManager) {}
+  constructor(
+    private readonly userRepository: UserRepository,
+    @InjectRepository(Article)
+    private readonly articleRepository: EntityRepository<Article>,
+    private readonly em: EntityManager,
+
+  ) {}
 
   async findAll(): Promise<User[]> {
     return this.userRepository.findAll();
@@ -103,6 +111,27 @@ export class UserService {
     );
   }
 
+  async getUserStats(): Promise<any[]> {
+    const users = await this.userRepository.findAll();
+
+    const userStats = await Promise.all(users.map(async user => {
+      const totalArticles = await this.countByUser(user); // Replace with actual method
+      const totalLikes = await this.countLikesByUser(user); // Replace with actual method
+      const firstArticleDate = await this.findFirstArticleDateByUser(user); // Replace with actual method
+
+      return {
+        username: user.username,
+        totalArticles,
+        totalLikes,
+        firstArticleDate,
+      };
+    }));
+
+    userStats.sort((a, b) => b.totalLikes - a.totalLikes);
+
+    return userStats;
+  }
+
   private buildUserRO(user: User) {
     const userRO = {
       bio: user.bio,
@@ -113,5 +142,24 @@ export class UserService {
     };
 
     return { user: userRO };
+  }
+
+  private async countByUser(user: User): Promise<number> {
+    return this.articleRepository.count({ author: user });
+  }
+
+  private async countLikesByUser(user: User): Promise<number> {
+    const articles = await this.articleRepository.find({ author: user }, {
+      populate: ['favoritesCount']
+    });
+    return articles.reduce((sum, article) => sum + article.favoritesCount, 0);
+  }
+
+  private async findFirstArticleDateByUser(user: User): Promise<Date | null> {
+    const firstArticle = await this.articleRepository.findOne(
+      { author: user },
+      { orderBy: { createdAt: QueryOrder.ASC } }
+    );
+    return firstArticle ? firstArticle.createdAt : null;
   }
 }
